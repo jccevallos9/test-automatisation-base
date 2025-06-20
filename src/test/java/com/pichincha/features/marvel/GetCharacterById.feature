@@ -24,7 +24,7 @@ Feature: Obtener personaje por ID - Validar personaje con ID 30
       }
       """
 
-    @id:2 @ErrorId
+    @id:2 @NotFound
     Scenario: Validar error al buscar personaje con ID inexistente
     Given url 'http://bp-se-test-cabcd9b246a5.herokuapp.com/testuser/api/characters/9999'
     When method GET
@@ -37,3 +37,23 @@ Feature: Obtener personaje por ID - Validar personaje con ID 30
       """
     And match response.error == 'Character not found'
     And match response == { error: '#string' }
+
+  @id:3 @InvalidInput
+  Scenario: Validar comportamiento con input malicioso (inyección SQL simulada)
+    Given url "https://bp-se-test-cabcd9b246a5.herokuapp.com/testuser/api/characters/'; DROP TABLE characters; --"
+    When method GET
+    Then status 400
+
+  @id:4 @EmptyInput
+  Scenario: Validar comportamiento cuando el ID está vacío
+    Given url 'https://bp-se-test-cabcd9b246a5.herokuapp.com/testuser/api/characters/'
+    When method GET
+    Then status 404
+
+  @id:5 @SpecialCharId
+  Scenario: Validar comportamiento con ID no numérico
+    Given url 'https://bp-se-test-cabcd9b246a5.herokuapp.com/testuser/api/characters/!@#$%'
+    When method GET
+    Then status 400
+
+
